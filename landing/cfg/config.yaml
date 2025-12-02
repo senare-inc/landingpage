@@ -1,20 +1,46 @@
 title: "Landingpage"
 environment: "Env"
 base: "env.github.com"
-items:
-  - name: "Alertmanager"
-    url: "alerts"
-    icon: "alertmanager.png"
 
-  - name: "Prometheus"
-    url: "prometheus"
-    icon: "prometheus.png"
+tabs:
+  - name: "Monitoring"
+    items:
+      - name: "Alertmanager"
+        url: "alerts"
+        icon: "alertmanager.png"
 
-  - name: "Grafana"
-    url: "grafana"
-    icon: "grafana.jpg"
+      - name: "Prometheus"
+        url: "prometheus"
+        icon: "prometheus.png"
 
-  - name: "Kafka UI"
-    url: "kafka"
-    icon: "kafka.png"
+      - name: "Grafana"
+        url: "grafana"
+        icon: "grafana.jpg"
 
+      - name: "Kafka UI"
+        url: "kafka"
+        icon: "kafkabat.png"
+
+  - name: "Deployment"
+    items:
+      - name: "Argo"
+        url: "argo"
+        icon: "argo.webp"
+
+      - name: "Kargo"
+        url: "kargo"
+        icon: "kargo.png"
+
+  - name: "Collaboration"
+    items:
+      - name: "Bitbucket"
+        url: "bitbucket"
+        icon: "bitbucket.jpeg"
+
+      - name: "Confluence"
+        url: "confluence"
+        icon: "confluence.webp"
+
+      - name: "jira"
+        url: "jira"
+        icon: "jira.png"

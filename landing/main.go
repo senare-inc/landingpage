@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -19,11 +20,16 @@ type Item struct {
 	Icon string `yaml:"icon"`
 }
 
+type Tab struct {
+	Name  string `yaml:"name"`
+	Items []Item `yaml:"items"`
+}
+
 type Config struct {
 	Title       string `yaml:"title"`
 	Environment string `yaml:"environment"`
 	Base        string `yaml:"base"`
-	Items       []Item `yaml:"items"`
+	Tabs        []Tab  `yaml:"tabs"`
 }
 
 func loadConfig(path string) (*Config, error) {
@@ -51,6 +57,12 @@ func main() {
 		log.Fatal("Error parsing template:", err)
 	}
 
+	for i := range cfg.Tabs {
+		for j := range cfg.Tabs[i].Items {
+			cfg.Tabs[i].Items[j].URL = buildURL(cfg.Base, cfg.Tabs[i].Items[j].URL)
+		}
+	}
+
 	http.Handle("/resources/", http.StripPrefix("/resources/", http.FileServer(http.Dir("resources"))))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -62,4 +74,11 @@ func main() {
 
 	log.Println("Server running at port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func buildURL(base, u string) string {
+	if strings.HasPrefix(u, "http://") || strings.HasPrefix(u, "https://") {
+		return u // absolute URLs used as-is
+	}
+	return "https://" + u + "." + base // relative URL expanded
 }

@@ -30,7 +30,7 @@
 
 <body class="font-sans min-h-screen flex items-center justify-center p-4">
 
-<div class="w-full max-w-2xl bg-white shadow-2xl rounded-xl p-8 transition duration-300 hover:shadow-primary-blue/30">
+<div class="w-full max-w-3xl bg-white shadow-2xl rounded-xl p-8">
 
     <!-- Header -->
     <header class="text-center mb-10">
@@ -42,28 +42,46 @@
         </p>
     </header>
 
-    <!-- Grid -->
-    <div id="tool-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-        {{ range .Items }}
-        <a href="https://{{ .URL }}.{{ $.Base }}" target="_blank"
-           class="tool-card group bg-secondary-gray p-5 rounded-lg border-2 border-transparent
-                  hover:border-primary-blue hover:bg-primary-blue/10 transition duration-300 block">
-
-            <div class="flex items-center space-x-4">
-                <img src="/resources/{{ .Icon }}" alt="{{ .Name }} icon" class="w-10 h-10 rounded">
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-800 group-hover:text-primary-blue">
-                        {{ .Name }}
-                    </h2>
-                    <p class="text-sm text-gray-500 group-hover:text-blue-600">
-                        {{ .URL }}
-                    </p>
-                </div>
-            </div>
-        </a>
+    <!-- Tabs -->
+    <div class="mb-6 border-b border-gray-200 flex overflow-x-auto">
+        {{ range $i, $tab := .Tabs }}
+        <button
+                class="tab-btn px-4 py-2 -mb-px font-medium text-gray-600 border-b-2 border-transparent
+                   hover:text-primary-blue hover:border-primary-blue transition whitespace-nowrap"
+                data-tab="tab-{{ $i }}"
+                {{ if eq $i 0 }}data-active="true"{{ end }}>
+            {{ $tab.Name }}
+        </button>
         {{ end }}
     </div>
+
+    <!-- Tab Content -->
+    {{ range $i, $tab := .Tabs }}
+    <div id="tab-{{ $i }}" class="tab-content {{ if ne $i 0 }}hidden{{ end }}">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            {{ range $tab.Items }}
+            <a href="{{ .URL }}" target="_blank"
+               class="tool-card group bg-secondary-gray p-5 rounded-lg border-2 border-transparent
+                      hover:border-primary-blue hover:bg-primary-blue/10 transition duration-300 block">
+
+                <div class="flex items-center space-x-4">
+                    <img src="/resources/{{ .Icon }}" alt="{{ .Name }} icon" class="w-10 h-10 rounded">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800 group-hover:text-primary-blue">
+                            {{ .Name }}
+                        </h2>
+                        <p class="text-sm text-gray-500 group-hover:text-blue-600">
+                            {{ .URL }}
+                        </p>
+                    </div>
+                </div>
+            </a>
+            {{ end }}
+
+        </div>
+    </div>
+    {{ end }}
 
     <!-- Footer -->
     <footer class="mt-10 pt-6 border-t border-gray-200 text-center">
@@ -73,6 +91,29 @@
     </footer>
 
 </div>
+
+<script>
+    // Tab logic
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const target = btn.dataset.tab;
+
+            // Hide all tab content
+            document.querySelectorAll(".tab-content").forEach(c => c.classList.add("hidden"));
+
+            // Remove active styling
+            document.querySelectorAll(".tab-btn").forEach(b => {
+                b.removeAttribute("data-active");
+                b.classList.remove("text-primary-blue", "border-primary-blue");
+            });
+
+            // Show selected
+            btn.setAttribute("data-active", "true");
+            btn.classList.add("text-primary-blue", "border-primary-blue");
+            document.getElementById(target).classList.remove("hidden");
+        });
+    });
+</script>
 
 </body>
 </html>
