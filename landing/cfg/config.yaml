@@ -2,15 +2,19 @@ title: "Landingpage"
 environment: "Env"
 base: "env.github.com"
 items:
-  - name: "alertmanager"
+  - name: "Alertmanager"
     url: "alerts"
     icon: "alertmanager.png"
 
-  - name: "prometheus"
+  - name: "Prometheus"
     url: "prometheus"
     icon: "prometheus.png"
 
-  - name: "grafana"
+  - name: "Grafana"
     url: "grafana"
     icon: "grafana.jpg"
+
+  - name: "Kafka UI"
+    url: "kafka"
+    icon: "kafka.png"
 
