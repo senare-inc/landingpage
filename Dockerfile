@@ -10,9 +10,11 @@ RUN CGO_ENABLED=0 go build -o server ./main.go
 
 FROM scratch
 
+WORKDIR /
+
 COPY --from=build /app/server /server
 
-COPY landing/resources /resources
+COPY --from=build /app/resources /resources
 
 COPY version.txt /version.txt
 
