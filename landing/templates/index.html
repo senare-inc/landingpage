@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +9,7 @@
 
     <script>
         tailwind.config = {
+            darkMode: "class",
             theme: {
                 extend: {
                     colors: {
@@ -25,28 +26,37 @@
 
     <style>
         body { background-color: #e5e7eb; }
+        .dark body { background-color: #111827; }
     </style>
 </head>
 
-<body class="font-sans min-h-screen flex items-center justify-center p-4">
+<body class="font-sans min-h-screen flex items-center justify-center p-4 transition">
 
-<div class="w-full max-w-3xl bg-white shadow-2xl rounded-xl p-8">
+<div class="w-full max-w-3xl bg-white dark:bg-gray-900 shadow-2xl rounded-xl p-8 transition">
+
+    <!-- Theme Toggle -->
+    <div class="flex justify-end mb-2">
+        <button id="themeToggle"
+                class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:scale-110 transition">
+            <span id="themeIcon" class="text-xl">🌙</span>
+        </button>
+    </div>
 
     <!-- Header -->
     <header class="text-center mb-10">
-        <h1 class="text-4xl font-extrabold text-gray-800 tracking-tight">
+        <h1 class="text-4xl font-extrabold text-gray-800 dark:text-gray-100 tracking-tight">
             <span class="text-primary-blue">{{ .Title }}</span> Tooling Hub
         </h1>
-        <p class="mt-2 text-lg text-gray-500">
+        <p class="mt-2 text-lg text-gray-500 dark:text-gray-400">
             Environment: {{ .Environment }}
         </p>
     </header>
 
     <!-- Tabs -->
-    <div class="mb-6 border-b border-gray-200 flex overflow-x-auto">
+    <div class="mb-6 border-b border-gray-200 dark:border-gray-700 flex overflow-x-auto no-scrollbar">
         {{ range $i, $tab := .Tabs }}
         <button
-                class="tab-btn px-4 py-2 -mb-px font-medium text-gray-600 border-b-2 border-transparent
+                class="tab-btn px-4 py-2 -mb-px font-medium text-gray-600 dark:text-gray-300 border-b-2 border-transparent
                    hover:text-primary-blue hover:border-primary-blue transition whitespace-nowrap"
                 data-tab="tab-{{ $i }}"
                 {{ if eq $i 0 }}data-active="true"{{ end }}>
@@ -62,16 +72,16 @@
 
             {{ range $tab.Items }}
             <a href="{{ .URL }}" target="_blank"
-               class="tool-card group bg-secondary-gray p-5 rounded-lg border-2 border-transparent
-                      hover:border-primary-blue hover:bg-primary-blue/10 transition duration-300 block">
+               class="tool-card group bg-secondary-gray dark:bg-gray-800 p-5 rounded-lg border-2 border-transparent
+                      hover:border-primary-blue hover:bg-primary-blue/10 dark:hover:bg-gray-700 transition duration-300 block">
 
                 <div class="flex items-center space-x-4">
                     <img src="/resources/{{ .Icon }}" alt="{{ .Name }} icon" class="w-10 h-10 rounded">
                     <div>
-                        <h2 class="text-xl font-semibold text-gray-800 group-hover:text-primary-blue">
+                        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 group-hover:text-primary-blue">
                             {{ .Name }}
                         </h2>
-                        <p class="text-sm text-gray-500 group-hover:text-blue-600">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-600">
                             {{ .URL }}
                         </p>
                     </div>
@@ -84,21 +94,24 @@
     {{ end }}
 
     <!-- Footer -->
-    <footer class="mt-10 pt-6 border-t border-gray-200 text-center">
-        <p class="text-sm text-gray-400">
+    <footer class="mt-10 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
+        <p class="text-sm text-gray-400 dark:text-gray-600">
             Tooling shortcuts for internal cluster environments.
         </p>
     </footer>
 
 </div>
 
+<!-- Tabs + Dark Mode Script -->
 <script>
-    // Tab logic
+    // -------------------------------
+    // Tabs
+    // -------------------------------
     document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             const target = btn.dataset.tab;
 
-            // Hide all tab content
+            // Hide all content
             document.querySelectorAll(".tab-content").forEach(c => c.classList.add("hidden"));
 
             // Remove active styling
@@ -112,6 +125,34 @@
             btn.classList.add("text-primary-blue", "border-primary-blue");
             document.getElementById(target).classList.remove("hidden");
         });
+    });
+
+    // -------------------------------
+    // Dark Mode Toggle
+    // -------------------------------
+    const root = document.documentElement;
+    const toggleBtn = document.getElementById("themeToggle");
+    const icon = document.getElementById("themeIcon");
+
+    function applyTheme(theme) {
+        if (theme === "dark") {
+            root.classList.add("dark");
+            icon.textContent = "☀️";
+        } else {
+            root.classList.remove("dark");
+            icon.textContent = "🌙";
+        }
+    }
+
+    const saved = localStorage.getItem("theme");
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    applyTheme(saved ? saved : systemDark ? "dark" : "light");
+
+    toggleBtn.addEventListener("click", () => {
+        const newTheme = root.classList.contains("dark") ? "light" : "dark";
+        applyTheme(newTheme);
+        localStorage.setItem("theme", newTheme);
     });
 </script>
 
