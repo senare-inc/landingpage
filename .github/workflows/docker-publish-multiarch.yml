@@ -44,27 +44,17 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/landing:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/landing:${{ env.VERSION }}
 
-      # 6. Save Docker image info
-      - name: Save Docker image info
-        run: |
-          echo "Docker images built for version $VERSION" > image-info.txt
-          echo "Tags:" >> image-info.txt
-          echo "${{ secrets.DOCKERHUB_USERNAME }}/landing:latest" >> image-info.txt
-          echo "${{ secrets.DOCKERHUB_USERNAME }}/landing:${{ env.VERSION }}" >> image-info.txt
-
-      # 7. Upload image info as artifact
-      - name: Upload image info as artifact
-        uses: actions/upload-artifact@v3
+      # 6. Create GitHub Release
+      - name: Create Release
+        uses: comnoco/create-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          name: image-info
-          path: image-info.txt
-
-      # 8. Create GitHub Release and attach file
-      - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ env.VERSION }}
-          name: Release ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
+          release_name: Release ${{ env.VERSION }}
+          body: |
+            Docker images built:
+            - ${{ secrets.DOCKERHUB_USERNAME }}/landing:latest
+            - ${{ secrets.DOCKERHUB_USERNAME }}/landing:${{ env.VERSION }}
           draft: false
           prerelease: false
-          files: image-info.txt
