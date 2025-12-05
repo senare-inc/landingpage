@@ -16,6 +16,4 @@ COPY --from=build /app/server /server
 
 COPY --from=build /app/resources /resources
 
-COPY version.txt /version.txt
-
 ENTRYPOINT ["/server"]
