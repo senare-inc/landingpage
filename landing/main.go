@@ -63,7 +63,8 @@ func (c *Config) ExpandShards() []ShardGroup {
 		var items []ExpandedShardItem
 
 		for _, item := range c.Shards.Items {
-			url := fmt.Sprintf("https://%s.%s/%s", shard, c.Base, item.Path)
+			base := strings.TrimPrefix(c.Base, "pfn.")
+			url := fmt.Sprintf("https://%s.%s/%s", shard, base, item.Path)
 			items = append(items, ExpandedShardItem{
 				Name: item.Name,
 				URL:  url,
