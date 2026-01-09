@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth" data-env="{{ .Environment }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,12 +25,105 @@
     </script>
 
     <style>
-        body { background-color: #e5e7eb; }
-        .dark body { background-color: #111827; }
-
         /* Hide scrollbar but allow horizontal scroll */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Base background */
+        body { background-color: #e5e7eb; }
+        .dark body { background-color: #111827; }
+
+
+        /* ============================= */
+        /* ENVIRONMENT THEMES */
+        /* ============================= */
+
+        /* Shared diagonal overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+        }
+
+        /* ----------------------------- */
+        /* DEV — Green */
+        /* ----------------------------- */
+        html[data-env="Dev"] body::before {
+            background-image: repeating-linear-gradient(
+                    45deg,
+                    rgba(34,197,94,0.18),
+                    rgba(34,197,94,0.18) 10px,
+                    transparent 10px,
+                    transparent 20px
+            );
+        }
+
+        /* ----------------------------- */
+        /* TESTING — Blue */
+        /* ----------------------------- */
+        html[data-env="Testing"] body::before {
+            background-image: repeating-linear-gradient(
+                    45deg,
+                    rgba(59,130,246,0.18),
+                    rgba(59,130,246,0.18) 10px,
+                    transparent 10px,
+                    transparent 20px
+            );
+        }
+
+        /* ----------------------------- */
+        /* STAGING — Orange */
+        /* ----------------------------- */
+        html[data-env="Staging"] body::before {
+            background-image: repeating-linear-gradient(
+                    45deg,
+                    rgba(245,158,11,0.22),
+                    rgba(245,158,11,0.22) 10px,
+                    transparent 10px,
+                    transparent 20px
+            );
+        }
+
+
+        /* ----------------------------- */
+        /* PROD — Red */
+        /* ----------------------------- */
+        html[data-env="Prod"] body::before {
+            background-image: repeating-linear-gradient(
+                    45deg,
+                    rgba(239,68,68,0.24),
+                    rgba(239,68,68,0.24) 10px,
+                    transparent 10px,
+                    transparent 20px
+            );
+        }
+
+
+        /* ============================= */
+        /* ENV PILL COLORS */
+        /* ============================= */
+
+        html[data-env="Dev"] .env-pill {
+            background-color: #bbf7d0;
+            color: #14532d;
+        }
+
+        html[data-env="Testing"] .env-pill {
+            background-color: #bfdbfe;
+            color: #1e3a8a;
+        }
+
+        html[data-env="Staging"] .env-pill {
+            background-color: #fed7aa;
+            color: #7c2d12;
+        }
+
+        html[data-env="Prod"] .env-pill {
+            background-color: #fecaca;
+            color: #7f1d1d;
+        }
+
     </style>
 </head>
 
@@ -51,9 +144,36 @@
         <h1 class="text-4xl font-extrabold text-gray-800 dark:text-gray-100 tracking-tight">
             <span class="text-primary-blue">{{ .Title }}</span> Tooling Hub
         </h1>
-        <p class="mt-2 text-lg text-gray-500 dark:text-gray-400">
-            Environment: {{ .Environment }}
-        </p>
+        <div class="mt-4 flex justify-center">
+            <div class="relative">
+
+                <button id="envToggle"
+                        class="px-4 py-2 rounded-full text-sm font-semibold
+                       bg-blue-100 text-blue-800
+                       dark:bg-blue-900 dark:text-blue-200
+                       hover:scale-105 transition">
+                    {{ .Environment }} ▼
+                </button>
+
+                <div id="envMenu"
+                     class="hidden absolute z-10 mt-2 w-48 rounded-lg shadow-lg
+                    bg-white dark:bg-gray-800 border dark:border-gray-700">
+
+                    {{ range .Environments }}
+                    <a href="{{ .URL }}"
+                       class="block px-4 py-2 text-sm transition
+                          hover:bg-gray-100 dark:hover:bg-gray-700
+                          {{ if eq .Name $.Environment }}
+                              font-semibold text-primary-blue
+                          {{ else }}
+                              text-gray-700 dark:text-gray-300
+                          {{ end }}">
+                        {{ .Name }}
+                    </a>
+                    {{ end }}
+                </div>
+            </div>
+        </div>
     </header>
 
     <!-- Tabs -->
@@ -211,6 +331,22 @@
         const newTheme = root.classList.contains("dark") ? "light" : "dark";
         applyTheme(newTheme);
         localStorage.setItem("theme", newTheme);
+    });
+</script>
+
+<script>
+
+    const envToggle = document.getElementById("envToggle");
+    const envMenu = document.getElementById("envMenu");
+
+    envToggle.addEventListener("click", () => {
+        envMenu.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!envToggle.contains(e.target)) {
+            envMenu.classList.add("hidden");
+        }
     });
 </script>
 

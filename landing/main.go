@@ -16,11 +16,17 @@ import (
 var templatesFS embed.FS
 
 type Config struct {
-	Title       string `yaml:"title"`
-	Environment string `yaml:"environment"`
-	Base        string `yaml:"base"`
-	Shards      Shards `yaml:"shards"`
-	Tabs        []Tab  `yaml:"tabs"`
+	Title        string            `yaml:"title"`
+	Environment  string            `yaml:"environment"`
+	Base         string            `yaml:"base"`
+	Environments []EnvironmentLink `yaml:"environments"`
+	Shards       Shards            `yaml:"shards"`
+	Tabs         []Tab             `yaml:"tabs"`
+}
+
+type EnvironmentLink struct {
+	Name string `yaml:"name"`
+	URL  string `yaml:"url"`
 }
 
 type Shards struct {
