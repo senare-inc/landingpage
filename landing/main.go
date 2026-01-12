@@ -21,7 +21,13 @@ type Config struct {
 	Base         string            `yaml:"base"`
 	Environments []EnvironmentLink `yaml:"environments"`
 	Shards       Shards            `yaml:"shards"`
+	Customers    []CustomerGroup   `yaml:"customers"`
 	Tabs         []Tab             `yaml:"tabs"`
+}
+
+type CustomerGroup struct {
+	Shard   string   `yaml:"shard"`
+	Tenants []string `yaml:"tenants"`
 }
 
 type EnvironmentLink struct {
@@ -62,14 +68,25 @@ type ShardGroup struct {
 	Items     []ExpandedShardItem
 }
 
+type ExpandedCustomer struct {
+	Name  string
+	Links []ExpandedShardItem
+}
+
+type CustomerShardGroup struct {
+	ShardName string
+	Customers []ExpandedCustomer
+}
+
 func (c *Config) ExpandShards() []ShardGroup {
 	var groups []ShardGroup
 
 	for _, shard := range c.Shards.Designation {
 		var items []ExpandedShardItem
 
+		base := strings.TrimPrefix(c.Base, "pfn.")
+
 		for _, item := range c.Shards.Items {
-			base := strings.TrimPrefix(c.Base, "pfn.")
 			url := fmt.Sprintf("https://%s.%s/%s", shard, base, item.Path)
 			items = append(items, ExpandedShardItem{
 				Name: item.Name,
@@ -81,6 +98,47 @@ func (c *Config) ExpandShards() []ShardGroup {
 		groups = append(groups, ShardGroup{
 			ShardName: shard,
 			Items:     items,
+		})
+	}
+
+	return groups
+}
+
+func (c *Config) ExpandCustomers() []CustomerShardGroup {
+	var groups []CustomerShardGroup
+
+	base := strings.TrimPrefix(c.Base, "pfn.")
+
+	for _, group := range c.Customers {
+		var customers []ExpandedCustomer
+
+		for _, tenant := range group.Tenants {
+			var links []ExpandedShardItem
+
+			for _, item := range c.Shards.Items {
+				url := fmt.Sprintf(
+					"https://%s.%s/%s",
+					tenant,
+					base,
+					item.Path,
+				)
+
+				links = append(links, ExpandedShardItem{
+					Name: item.Name,
+					URL:  url,
+					Icon: item.Icon,
+				})
+			}
+
+			customers = append(customers, ExpandedCustomer{
+				Name:  tenant,
+				Links: links,
+			})
+		}
+
+		groups = append(groups, CustomerShardGroup{
+			ShardName: group.Shard,
+			Customers: customers,
 		})
 	}
 
@@ -119,16 +177,19 @@ func main() {
 	}
 
 	expandedShards := cfg.ExpandShards()
+	expandedCustomers := cfg.ExpandCustomers()
 
 	http.Handle("/resources/", http.StripPrefix("/resources/", http.FileServer(http.Dir("resources"))))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		data := struct {
 			*Config
-			ExpandedShards []ShardGroup
+			ExpandedShards    []ShardGroup
+			ExpandedCustomers []CustomerShardGroup
 		}{
-			Config:         cfg,
-			ExpandedShards: expandedShards,
+			Config:            cfg,
+			ExpandedShards:    expandedShards,
+			ExpandedCustomers: expandedCustomers,
 		}
 
 		err := tmpl.ExecuteTemplate(w, "index.html", data)
