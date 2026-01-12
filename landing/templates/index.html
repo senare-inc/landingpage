@@ -432,7 +432,7 @@
     });
 
     document.addEventListener("click", (e) => {
-        if (!envToggle.contains(e.target)) {
+        if (!envToggle.contains(e.target) && !envMenu.contains(e.target)) {
             envMenu.classList.add("hidden");
         }
     });
