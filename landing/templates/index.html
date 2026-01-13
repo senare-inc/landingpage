@@ -201,7 +201,7 @@
         <button
                 class="tab-btn px-4 py-2 -mb-px font-medium text-gray-600 dark:text-gray-300 border-b-2 border-transparent
                    hover:text-primary-blue hover:border-primary-blue transition whitespace-nowrap"
-                data-tab="tab-{{ $i }}">
+                data-tab="tab-{{ $tab.Index }}">
             {{ $tab.Name }}
         </button>
         {{ end }}
@@ -262,7 +262,7 @@
 
         {{ range .ExpandedShards }}
         <div class="bg-secondary-gray dark:bg-gray-800 p-4 rounded-lg shadow">
-                <details class="group">
+                <details class="group" data-shard="{{ .DataShard }}">
                     <summary class="cursor-pointer text-xl font-semibold text-gray-800 dark:text-gray-100 flex justify-between items-center">
                     {{ .ShardName }}
                         <span class="text-gray-500 group-open:rotate-180 transition-transform">▼</span>
@@ -347,7 +347,7 @@
     function showShard(shardName) {
         activateTab("tab-shards");
         const shard = [...document.querySelectorAll("#tab-shards details")]
-            .find(d => d.querySelector("summary").textContent.trim() === shardName);
+            .find(d => d.dataset.shard === shardName.toLowerCase().replaceAll(" ", "-"));
         if (shard) {
             shard.open = true;
             shard.scrollIntoView({ behavior: "smooth" });

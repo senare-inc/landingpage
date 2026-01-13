@@ -47,6 +47,7 @@ type ShardItem struct {
 }
 
 type Tab struct {
+	Index int
 	Name  string    `yaml:"name"`
 	Items []TabItem `yaml:"items"`
 }
@@ -66,6 +67,7 @@ type ExpandedShardItem struct {
 type ShardGroup struct {
 	ShardName string
 	Items     []ExpandedShardItem
+	DataShard string
 }
 
 type ExpandedCustomer struct {
@@ -98,6 +100,7 @@ func (c *Config) ExpandShards() []ShardGroup {
 		groups = append(groups, ShardGroup{
 			ShardName: shard,
 			Items:     items,
+			DataShard: strings.ToLower(strings.ReplaceAll(shard, " ", "-")),
 		})
 	}
 
@@ -169,6 +172,7 @@ func main() {
 	}
 
 	for i := range cfg.Tabs {
+		cfg.Tabs[i].Index = i
 		for j := range cfg.Tabs[i].Items {
 			cfg.Tabs[i].Items[j].URL = buildURL(cfg.Base, cfg.Tabs[i].Items[j].URL)
 		}
