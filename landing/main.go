@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"embed"
 	"fmt"
 	"html/template"
@@ -194,10 +195,13 @@ func main() {
 			ExpandedCustomers: expandedCustomers,
 		}
 
-		err := tmpl.ExecuteTemplate(w, "index.html", data)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		var buf bytes.Buffer
+		if err := tmpl.ExecuteTemplate(&buf, "index.html", data); err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			log.Println("Template execution error:", err)
+			return
 		}
+		w.Write(buf.Bytes())
 	})
 
 	log.Println("Server running at port 8080")
