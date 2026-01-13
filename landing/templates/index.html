@@ -228,39 +228,27 @@
                 <div class="mt-4 space-y-4">
 
                     {{ range .Customers }}
-                    <div class="bg-white dark:bg-gray-700 p-4 rounded-lg">
-                        <details class="group">
-                            <summary
-                                    class="cursor-pointer font-semibold
-                                       text-gray-800 dark:text-gray-100
-                                       flex justify-between items-center">
-                                {{ .Name }}
-                                <span class="text-gray-400 group-open:rotate-180 transition-transform">▼</span>
-                            </summary>
-
-                            <div class="mt-3 space-y-3">
-                                {{ range .Links }}
-                                <a href="{{ .URL }}" target="_blank"
-                                   class="flex items-center space-x-4
-                                      bg-secondary-gray dark:bg-gray-800
-                                      p-3 rounded-lg
-                                      hover:border-primary-blue
-                                      border border-transparent transition">
-                                    <img src="/resources/{{ .Icon }}" class="w-8 h-8 rounded">
-                                    <div>
-                                        <h3 class="font-medium text-gray-800 dark:text-gray-100">
-                                            {{ .Name }}
-                                        </h3>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                                            {{ .URL }}
-                                        </p>
-                                    </div>
-                                </a>
-                                {{ end }}
-                            </div>
-                        </details>
-                    </div>
-                    {{ end }}
+                        <div class="mt-3 space-y-3">
+                            {{ range .Links }}
+                            <a href="{{ .URL }}" target="_blank"
+                               class="flex items-center space-x-4
+                                  bg-secondary-gray dark:bg-gray-800
+                                  p-3 rounded-lg
+                                  hover:border-primary-blue
+                                  border border-transparent transition">
+                                <img src="/resources/{{ .Icon }}" class="w-8 h-8 rounded">
+                                <div>
+                                    <h3 class="font-medium text-gray-800 dark:text-gray-100">
+                                        {{ .Name }}
+                                    </h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                        {{ .URL }}
+                                    </p>
+                                </div>
+                            </a>
+                            {{ end }}
+                        </div>
+                   {{ end }}
 
                 </div>
             </div>

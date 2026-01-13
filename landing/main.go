@@ -115,20 +115,18 @@ func (c *Config) ExpandCustomers() []CustomerShardGroup {
 		for _, tenant := range group.Tenants {
 			var links []ExpandedShardItem
 
-			for _, item := range c.Shards.Items {
-				url := fmt.Sprintf(
-					"https://%s.%s/%s",
-					tenant,
-					base,
-					item.Path,
-				)
+			url := fmt.Sprintf(
+				"https://%s.%s/%s",
+				tenant,
+				base,
+				"wanda",
+			)
 
-				links = append(links, ExpandedShardItem{
-					Name: item.Name,
-					URL:  url,
-					Icon: item.Icon,
-				})
-			}
+			links = append(links, ExpandedShardItem{
+				Name: tenant,
+				URL:  url,
+				Icon: "fish.png",
+			})
 
 			customers = append(customers, ExpandedCustomer{
 				Name:  tenant,
