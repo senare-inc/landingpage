@@ -33,15 +33,7 @@
         // Dynamic colored SVG favicon
         // ================================
         (function() {
-            const envColors = {
-                "Development": "#22c55e",  // green
-                "Testing": "#3b82f6",      // blue
-                "Staging": "#f59e0b",      // orange
-                "Production": "#ef4444",   // red
-            };
-
-            const env = document.documentElement.dataset.env;
-            const color = envColors[env] || "#1e40af";
+            const color = "{{ .EnvColor }}";
 
             // Expose as CSS variables
             const root = document.documentElement;

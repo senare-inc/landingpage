@@ -21,6 +21,7 @@ type Config struct {
 	Environment  string            `yaml:"environment"`
 	FQDN         string            `yaml:"fqdn"`
 	Environments []EnvironmentLink `yaml:"environments"`
+	EnvColor     string            // computed at runtime
 	Shards       Shards            `yaml:"shards"`
 	Customers    []CustomerGroup   `yaml:"customers"`
 	Tabs         []Tab             `yaml:"tabs"`
@@ -32,8 +33,9 @@ type CustomerGroup struct {
 }
 
 type EnvironmentLink struct {
-	Name string `yaml:"name"`
-	URL  string `yaml:"url"`
+	Name  string `yaml:"name"`
+	URL   string `yaml:"url"`
+	Color string `yaml:"color"`
 }
 
 type Shards struct {
@@ -184,6 +186,18 @@ func main() {
 	cfg, err := loadConfig("cfg/config.yaml")
 	if err != nil {
 		log.Fatal("Error loading config:", err)
+	}
+
+	// Resolve color for current environment
+	for _, e := range cfg.Environments {
+		if e.Name == cfg.Environment {
+			cfg.EnvColor = e.Color
+		}
+	}
+
+	// fallback
+	if cfg.EnvColor == "" {
+		cfg.EnvColor = "#1e40af"
 	}
 
 	tmpl, err := template.ParseFS(templatesFS, "templates/*.html")
