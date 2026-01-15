@@ -19,7 +19,7 @@ var templatesFS embed.FS
 type Config struct {
 	Title        string            `yaml:"title"`
 	Environment  string            `yaml:"environment"`
-	Base         string            `yaml:"base"`
+	FQDN         string            `yaml:"fqdn"`
 	Environments []EnvironmentLink `yaml:"environments"`
 	Shards       Shards            `yaml:"shards"`
 	Customers    []CustomerGroup   `yaml:"customers"`
@@ -37,25 +37,19 @@ type EnvironmentLink struct {
 }
 
 type Shards struct {
-	Designation []string    `yaml:"designation"`
-	Items       []ShardItem `yaml:"items"`
-}
-
-type ShardItem struct {
-	Name string `yaml:"name"`
-	Path string `yaml:"path"`
-	Icon string `yaml:"icon"`
+	Items []Item `yaml:"items"`
 }
 
 type Tab struct {
 	Index int
-	Name  string    `yaml:"name"`
-	Items []TabItem `yaml:"items"`
+	Name  string `yaml:"name"`
+	Items []Item `yaml:"items"`
 }
 
-type TabItem struct {
+type Item struct {
 	Name string `yaml:"name"`
-	URL  string `yaml:"url"`
+	URL  string `yaml:"url,omitempty"`  // used by tabs
+	Path string `yaml:"path,omitempty"` // used by shards
 	Icon string `yaml:"icon"`
 }
 
@@ -81,16 +75,43 @@ type CustomerShardGroup struct {
 	Customers []ExpandedCustomer
 }
 
+// ======================================================
+// Infer shard list from customers (replaces designation)
+// ======================================================
+
+func (c *Config) shardListFromCustomers() []string {
+	seen := map[string]bool{}
+	var result []string
+
+	for _, g := range c.Customers {
+		if !seen[g.Shard] {
+			seen[g.Shard] = true
+			result = append(result, g.Shard)
+		}
+	}
+
+	return result
+}
+
+//======================================================
+// Infer base from FQDN i.e. drop pfn
+// ======================================================
+
+func (c *Config) base() string {
+	return strings.TrimPrefix(c.FQDN, "pfn.")
+}
+
+// ======================================================
+
 func (c *Config) ExpandShards() []ShardGroup {
 	var groups []ShardGroup
 
-	for _, shard := range c.Shards.Designation {
+	for _, shard := range c.shardListFromCustomers() {
 		var items []ExpandedShardItem
 
-		base := strings.TrimPrefix(c.Base, "pfn.")
-
 		for _, item := range c.Shards.Items {
-			url := fmt.Sprintf("https://%s.%s/%s", shard, base, item.Path)
+			url := fmt.Sprintf("https://%s.%s/%s", shard, c.base(), item.Path)
+
 			items = append(items, ExpandedShardItem{
 				Name: item.Name,
 				URL:  url,
@@ -111,8 +132,6 @@ func (c *Config) ExpandShards() []ShardGroup {
 func (c *Config) ExpandCustomers() []CustomerShardGroup {
 	var groups []CustomerShardGroup
 
-	base := strings.TrimPrefix(c.Base, "pfn.")
-
 	for _, group := range c.Customers {
 		var customers []ExpandedCustomer
 
@@ -122,7 +141,7 @@ func (c *Config) ExpandCustomers() []CustomerShardGroup {
 			url := fmt.Sprintf(
 				"https://%s.%s/%s",
 				tenant,
-				base,
+				c.base(),
 				"wanda",
 			)
 
@@ -175,7 +194,7 @@ func main() {
 	for i := range cfg.Tabs {
 		cfg.Tabs[i].Index = i
 		for j := range cfg.Tabs[i].Items {
-			cfg.Tabs[i].Items[j].URL = buildURL(cfg.Base, cfg.Tabs[i].Items[j].URL)
+			cfg.Tabs[i].Items[j].URL = buildURL(cfg.FQDN, cfg.Tabs[i].Items[j].URL)
 		}
 	}
 
