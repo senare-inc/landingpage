@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ .Title }} - {{ .Environment }}</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/resources/fish.png">
-    <link rel="apple-touch-icon" href="/resources/fish.png">
+    <!-- Favicon placeholder -->
+    <link id="favicon" rel="icon" type="image/svg+xml">
+    <link id="apple-favicon" rel="apple-touch-icon" type="image/svg+xml">
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -26,6 +26,52 @@
                 }
             }
         }
+    </script>
+
+    <script>
+        // ================================
+        // Dynamic colored SVG favicon
+        // ================================
+        (function() {
+            const envColors = {
+                "Development": "#22c55e",  // green
+                "Testing": "#3b82f6",      // blue
+                "Staging": "#f59e0b",      // orange
+                "Production": "#ef4444",   // red
+            };
+
+            const env = document.documentElement.dataset.env;
+            const color = envColors[env] || "#1e40af";
+
+            // Expose as CSS variables
+            const root = document.documentElement;
+            root.style.setProperty("--env-color", color);
+
+            function hexToRgb(hex) {
+                const bigint = parseInt(hex.slice(1), 16);
+                return [
+                    (bigint >> 16) & 255,
+                    (bigint >> 8) & 255,
+                    bigint & 255
+                ].join(",");
+            }
+
+            const rgb = hexToRgb(color);
+            root.style.setProperty("--env-color-rgb", rgb);
+
+            // ===== FAVICON =====
+            fetch("/resources/fish.svg")
+                .then(r => r.text())
+                .then(svgText => {
+                    const coloredSvg = svgText.replace(/currentColor/g, color);
+                    const blob = new Blob([coloredSvg], { type: "image/svg+xml" });
+                    const url = URL.createObjectURL(blob);
+
+                    document.getElementById("favicon").href = url;
+                    document.getElementById("apple-favicon").href = url;
+                })
+                .catch(err => console.error("Failed to load colored favicon:", err));
+        })();
     </script>
 
     <style>
@@ -48,86 +94,25 @@
             position: fixed;
             inset: 0;
             z-index: -1;
-        }
 
-        /* ----------------------------- */
-        /* DEV — Green */
-        /* ----------------------------- */
-        html[data-env="Development"] body::before {
             background-image: repeating-linear-gradient(
                     45deg,
-                    rgba(34,197,94,0.18),
-                    rgba(34,197,94,0.18) 10px,
+                    rgba(var(--env-color-rgb), 0.20),
+                    rgba(var(--env-color-rgb), 0.20) 10px,
                     transparent 10px,
                     transparent 20px
             );
         }
 
-        /* ----------------------------- */
-        /* TESTING — Blue */
-        /* ----------------------------- */
-        html[data-env="Testing"] body::before {
-            background-image: repeating-linear-gradient(
-                    45deg,
-                    rgba(59,130,246,0.18),
-                    rgba(59,130,246,0.18) 10px,
-                    transparent 10px,
-                    transparent 20px
-            );
+        .env-pill {
+            background-color: rgba(var(--env-color-rgb), 0.18);
+            color: var(--env-color);
         }
 
-        /* ----------------------------- */
-        /* STAGING — Orange */
-        /* ----------------------------- */
-        html[data-env="Staging"] body::before {
-            background-image: repeating-linear-gradient(
-                    45deg,
-                    rgba(245,158,11,0.22),
-                    rgba(245,158,11,0.22) 10px,
-                    transparent 10px,
-                    transparent 20px
-            );
+        .tab-btn-active {
+            color: var(--env-color) !important;
+            border-color: var(--env-color) !important;
         }
-
-
-        /* ----------------------------- */
-        /* PROD — Red */
-        /* ----------------------------- */
-        html[data-env="Production"] body::before {
-            background-image: repeating-linear-gradient(
-                    45deg,
-                    rgba(239,68,68,0.24),
-                    rgba(239,68,68,0.24) 10px,
-                    transparent 10px,
-                    transparent 20px
-            );
-        }
-
-
-        /* ============================= */
-        /* ENV PILL COLORS */
-        /* ============================= */
-
-        html[data-env="Development"] .env-pill {
-            background-color: #bbf7d0;
-            color: #14532d;
-        }
-
-        html[data-env="Testing"] .env-pill {
-            background-color: #bfdbfe;
-            color: #1e3a8a;
-        }
-
-        html[data-env="Staging"] .env-pill {
-            background-color: #fed7aa;
-            color: #7c2d12;
-        }
-
-        html[data-env="Production"] .env-pill {
-            background-color: #fecaca;
-            color: #7f1d1d;
-        }
-
     </style>
 </head>
 
@@ -146,16 +131,13 @@
     <!-- Header -->
     <header class="text-center mb-10">
         <h1 class="text-4xl font-extrabold text-gray-800 dark:text-gray-100 tracking-tight">
-            <span class="text-primary-blue">{{ .Title }}</span> Tooling Hub
+            <span style="color: var(--env-color)">{{ .Title }}</span> Tooling Hub
         </h1>
         <div class="mt-4 flex justify-center">
             <div class="relative">
 
                 <button id="envToggle"
-                        class="px-4 py-2 rounded-full text-sm font-semibold
-                       bg-blue-100 text-blue-800
-                       dark:bg-blue-900 dark:text-blue-200
-                       hover:scale-105 transition">
+                        class="env-pill px-4 py-2 rounded-full text-sm font-semibold hover:scale-105 transition">
                     {{ .Environment }} ▼
                 </button>
 
@@ -328,13 +310,15 @@
     // -------------------------------
     function activateTab(tabId) {
         document.querySelectorAll(".tab-content").forEach(p => p.classList.add("hidden"));
+
         document.querySelectorAll(".tab-btn").forEach(b =>
-            b.classList.remove("text-primary-blue", "border-primary-blue")
+            b.classList.remove("tab-btn-active")
         );
 
         document.getElementById(tabId)?.classList.remove("hidden");
+
         document.querySelector(`[data-tab="${tabId}"]`)
-            ?.classList.add("text-primary-blue", "border-primary-blue");
+            ?.classList.add("tab-btn-active");
     }
 
     document.querySelectorAll(".tab-btn").forEach(btn =>

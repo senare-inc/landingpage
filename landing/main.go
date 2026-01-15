@@ -129,7 +129,7 @@ func (c *Config) ExpandCustomers() []CustomerShardGroup {
 			links = append(links, ExpandedShardItem{
 				Name: tenant,
 				URL:  url,
-				Icon: "fish.png",
+				Icon: "fish.svg",
 			})
 
 			customers = append(customers, ExpandedCustomer{
